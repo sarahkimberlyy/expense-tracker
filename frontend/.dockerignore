@@ -1,0 +1,26 @@
+# Dependency directory
+node_modules
+
+# Vite/React build output
+dist
+
+# Logs
+*.log
+npm-debug.log
+
+# Environment variables and secrets
+.env
+.env.local
+
+# Git and related
+.git
+.gitignore
+
+# IDE and OS files
+.vscode
+.DS_Store
+Thumbs.db
+
+# Docker artifacts
+Dockerfile
+.dockerignore

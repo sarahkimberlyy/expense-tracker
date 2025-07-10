@@ -1,0 +1,44 @@
+services:
+  frontend:
+    build:
+      context: ./frontend         # Build the frontend image from the ./frontend directory
+    ports:
+      - "3000:80"                 # Map container port 80 (used by nginx or similar in frontend) to host port 3000
+    depends_on:
+      - backend                  # Wait for backend to be ready before starting frontend
+    networks:
+      - app-network              # Connect to a custom bridge network for inter-service communication
+
+  backend:
+    build:
+      context: ./backend          # Build the backend image from the ./backend directory
+    ports:
+      - "3001:3001"               # Map container port 3001 to host port 3001
+    depends_on:
+      - postgres                 # Ensure Postgres is ready before starting backend
+    environment:
+      - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB} 
+                                # Environment variable for database connection string (uses service name 'postgres' as hostname)
+    networks:
+      - app-network              # Connect backend to the same network as frontend and database
+
+  postgres:
+    image: postgres:15           # Use the official Postgres 15 image
+    restart: always              # Automatically restart the container if it crashes
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}            # Set initial database name from .env
+      - POSTGRES_USER=${POSTGRES_USER}        # Set Postgres user from .env
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}# Set Postgres password from .env
+    volumes:
+      - pgdata:/var/lib/postgresql/data       # Persist database data using a named volume
+    ports:
+      - "5432:5432"             # Map container port 5432 to host for development access (e.g., via pgAdmin)
+    networks:
+      - app-network             # Connect Postgres to the custom bridge network
+
+volumes:
+  pgdata:                        # Declare a named volume for persisting Postgres data
+
+networks:
+  app-network:                   # Define a custom bridge network for service communication
+    driver: bridge
